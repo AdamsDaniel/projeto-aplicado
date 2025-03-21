@@ -1,20 +1,20 @@
-# Use a imagem oficial do Python como base
+# Use imagem oficial Python como base
 FROM python:3.9-slim
 
-# Defina o diretório de trabalho no container
+# Define diretório de trabalho no container
 WORKDIR /app
 
-# Copie os arquivos de requisitos para o container
+# Copia arquivos de requisitos para o container
 COPY requirements.txt .
 
-# Instale as dependências do Python
+# Instala dependências Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copie todo o código do backend para o container
+# Copia código backend para container
 COPY . .
 
-# Exponha a porta 5000
+# Expoe porta 5000
 EXPOSE 5000
 
-# Comando padrão para iniciar a aplicação Flask
+# Comando padrão iniciar Flask
 CMD ["python", "app.py"]

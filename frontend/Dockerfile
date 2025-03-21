@@ -1,23 +1,23 @@
-# Use a imagem oficial do Node.js como base
+# Usa imagem oficial Node.js como base
 FROM node:16
 
-# Defina o diretório de trabalho no container
+# Define diretório de trabalho no container
 WORKDIR /app
 
 # Copie os arquivos package.json e package-lock.json para o container
 COPY package*.json ./
 
-# Instale as dependências do projeto
+# Instala dependências
 RUN npm install
 
-# Copie todo o código do frontend para o container
+# Copy todo código frontend para o container
 COPY . .
 
-# Construa a aplicação React para produção
+# Construe aplicação React para produção
 RUN npm run build
 
-# Exponha a porta 3000
+# Expõe a porta 3000
 EXPOSE 3000
 
-# Comando padrão para iniciar o servidor de desenvolvimento
+# Comando padrão iniciar servidor desenvolvimento
 CMD ["npm", "start"]
