@@ -1,0 +1,60 @@
+services:
+  # Serviço do Frontend (React PWA)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000" # Porta do React (desenvolvimento)
+    depends_on:
+      - api # O frontend depende do backend estar disponível
+    volumes:
+      - ./frontend:/app # Sincroniza os arquivos locais com o container
+      - /app/node_modules # Evita conflitos de dependências
+    environment:
+      - CHOKIDAR_USEPOLLING=true # Resolve problemas de hot reload em sistemas de arquivos Docker
+
+  # Serviço do Backend (Flask API)
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000" # Porta do Flask API
+    depends_on:
+      - db # O backend depende do banco de dados estar disponível
+    environment:
+      - FLASK_ENV=development # Define o ambiente como desenvolvimento
+      - DATABASE_URI=mysql+pymysql://root:password@db/risk_management # URI para conexão com o MySQL
+    volumes:
+      - ./backend:/app # Sincroniza os arquivos locais com o container
+
+  # Serviço do Banco de Dados (MySQL)
+  db:
+    image: mysql:8.0 # Imagem oficial do MySQL versão 8.0
+    container_name: mysql_db # Nome do container para fácil identificação
+    ports:
+      - "3306:3306" # Porta padrão do MySQL
+    environment:
+      MYSQL_ROOT_PASSWORD: password # Senha do usuário root (alterar para produção)
+      MYSQL_DATABASE: risk_management # Nome do banco de dados inicial
+    volumes:
+      - db_data:/var/lib/mysql # Volume persistente para armazenar os dados
+
+  # Serviço do Nginx (Proxy Reverso e SSL)
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"   # Porta HTTP para acesso público
+      - "443:443" # Porta HTTPS para acesso seguro (SSL)
+    depends_on:
+      - frontend
+      - api
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf # Configuração personalizada do Nginx
+      - ./nginx/ssl:/etc/nginx/ssl               # Certificados SSL
+
+volumes:
+  db_data: # Volume persistente para o banco de dados MySQL
