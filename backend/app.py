@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, jsonify, request # Erro de importação somente no projeto local
+from flask_sqlalchemy import SQLAlchemy # Erro de importação somente no projeto local
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@db/risk_management'
