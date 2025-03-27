@@ -1,0 +1,17 @@
+FROM alpine:latest
+
+# Atualiza os repositórios e instala mysql-client e gzip (não precisa instalar cron)
+RUN apk update && apk add --no-cache mysql-client gzip
+
+# Copia o script de backup para o container
+COPY scripts/backup.sh /scripts/backup.sh
+
+# Copia o arquivo de agendamento cron para o diretório correto do Alpine
+# No Alpine, os cronjobs do root ficam em /etc/crontabs/root
+COPY scripts/cronjobs /etc/crontabs/root
+
+# Garante que o script de backup seja executável
+RUN chmod +x /scripts/backup.sh
+
+# Inicia o crond em primeiro plano com log nível 2
+CMD ["crond", "-f", "-l", "2"]

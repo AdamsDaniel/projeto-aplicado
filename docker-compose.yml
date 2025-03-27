@@ -1,58 +1,71 @@
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000" # Porta do React (desenvolvimento)
-    depends_on:
-      - api # O frontend depende do backend estar disponível
-    volumes:
-      - ./frontend:/app # Sincroniza arquivos locais com container
-      - /app/node_modules # Evita conflitos de dependências
-    environment:
-      - CHOKIDAR_USEPOLLING=true # Resolve problemas de hot reload em sistemas de arquivos Docker
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        ports:
+            - "3000:3000"
+        depends_on:
+            - api
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        environment:
+            - CHOKIDAR_USEPOLLING=true
 
-  # Serviço Backend (Flask API)
-  api:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "5000:5000"
-    depends_on:
-      - db # O backend depende do banco de dados estar disponível
-    environment:
-      - FLASK_ENV=development # Define o ambiente como desenvolvimento
-      - DATABASE_URI=mysql+pymysql://root:password@db/risk_management
-    volumes:
-      - ./backend:/app # Sincroniza arquivos locais com container
+    api:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        ports:
+            - "5000:5000"
+        depends_on:
+            - db
+        environment:
+            - FLASK_ENV=development
+            - DATABASE_URI=mysql+pymysql://root:password@db/risk_management
+        volumes:
+            - ./backend:/app
 
-  db:
-    image: mysql:8.0
-    container_name: mysql_db # Nome do container
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: password # (((alterar para produção)))
-      MYSQL_DATABASE: risk_management
-    volumes:
-      - db_data:/var/lib/mysql # Volume persistente para armazenar os dados
+    db:
+        image: mysql:8.0
+        container_name: mysql_db
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: password
+            MYSQL_DATABASE: risk_management
+        volumes:
+            - db_data:/var/lib/mysql
 
-  # Nginx - Proxy Reverso e SSL
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"   # HTTP acesso público
-      - "443:443" # HTTPS acesso seguro (SSL)
-    depends_on:
-      - frontend
-      - api
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf # Configuração personalizada do Nginx
-      - ./nginx/ssl:/etc/nginx/ssl               # Certificados SSL
+    nginx:
+        build:
+            context: ./nginx
+            dockerfile: Dockerfile
+        ports:
+            - "80:80"
+            - "443:443"
+        depends_on:
+            - frontend
+            - api
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+        command:
+            - nginx
+            - -g
+            - daemon off; 
+
+    backup:
+        build:
+            context: ./database
+            dockerfile: Dockerfile.backup
+        volumes:
+            - backup_volume:/backups
+        environment:
+            - MYSQL_ROOT_PASSWORD=password
+        depends_on:
+            - db
 
 volumes:
-  db_data: # Volume persistente para o banco de dados MySQL
+    db_data:
+    backup_volume:

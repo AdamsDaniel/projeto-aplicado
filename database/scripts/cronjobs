@@ -1,0 +1,4 @@
+
+0 2 * * * /scripts/backup.sh >> /var/log/cron.log 2>&1
+# Uma linha vazia é necessária no final do arquivo
+
